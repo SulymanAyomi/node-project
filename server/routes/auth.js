@@ -37,6 +37,17 @@ router.post("/auth/signup", async (req, res) => {
     res.json({ success: false, message: "Please enter email or password" });
   } else {
     try {
+      email = await User.findOne({ email: req.body.email });
+      // validation
+      if (email) {
+        console.log("tr");
+        res.json({
+          success: false,
+          message: "Email already exist",
+        });
+        return;
+      }
+
       let newUser = new User();
       newUser.name = req.body.name;
       newUser.email = req.body.email;
@@ -58,8 +69,6 @@ router.post("/auth/signup", async (req, res) => {
 
       await newUser.save();
 
-      console.log(req.body);
-
       let token = jwt.sign(newUser.toJSON(), process.env.SECRET, {
         expiresIn: 604800, // 1 week
       });
@@ -73,7 +82,7 @@ router.post("/auth/signup", async (req, res) => {
     } catch (err) {
       res.status(500).json({
         success: false,
-        message: err.message,
+        message: "Server error. Try again",
       });
     }
   }
@@ -164,6 +173,7 @@ router.post("/auth/login", async (req, res) => {
         success: false,
         message: "Authourization failed, User not found",
       });
+      return;
 
       // if (foundUser.status != "Active") {
       //   return res.status(401).send({
@@ -171,19 +181,18 @@ router.post("/auth/login", async (req, res) => {
       //     message: "Pending Account. Please Verify Your Email!",
       //   });
       // }
+    }
+    if (foundUser.comparePassword(req.body.password)) {
+      let token = jwt.sign(foundUser.toJSON(), process.env.SECRET, {
+        expiresIn: 604800, // 1 week
+      });
 
-      if (foundUser.comparePassword(req.body.password)) {
-        let token = jwt.sign(foundUser.toJSON(), process.env.SECRET, {
-          expiresIn: 604800, // 1 week
-        });
-
-        res.json({ success: true, token: token });
-      } else {
-        res.status(403).json({
-          success: true,
-          message: "Authourization failed, wrong password",
-        });
-      }
+      res.json({ success: true, token: token });
+    } else {
+      res.status(403).json({
+        success: true,
+        message: "Authourization failed, wrong password",
+      });
     }
   } catch (err) {
     res.status(500).json({
