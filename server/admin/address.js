@@ -47,21 +47,6 @@ router.get("/addresses", verfityToken, async (req, res) => {
   }
 });
 
-router.get("/address/:id", verfityToken, async (req, res) => {
-  try {
-    let address = await Address.findOne({ _id: req.params.id });
-    res.json({
-      success: true,
-      address: address,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-});
-
 router.get("/state", async (req, res) => {
   try {
     let result = await axios.get(
@@ -81,21 +66,27 @@ router.get("/state", async (req, res) => {
 
 router.put("/address/:id", verfityToken, async (req, res) => {
   try {
-    let foundAddress = await Address.findOne({ _id: req.params.id });
-    if (req.body.state) foundAddress.state = req.body.state;
-    if (req.body.city) foundAddress.city = req.body.city;
-    if (req.body.streetAddress)
-      foundAddress.streetAddress = req.body.streetAddress;
-    if (req.body.phoneNumber) foundAddress.phoneNumber = req.body.phoneNumber;
+    let foundAddress = await Address.findOne({ _id: req.params._id });
+    if (foundAddress) {
+      if (req.body.firstName) foundAddress.firstName = req.firstName;
+      if (req.body.lastName) foundAddress.lastName = req.lastName;
+      if (req.body.state) foundAddress.state = req.body.state;
+      if (req.body.city) foundAddress.city = req.body.city;
+      if (req.body.streetAddress)
+        foundAddress.streetAddress = req.body.streetAddress;
+      if (req.body.zipCode) foundAddress.zipCode = req.body.zipCode;
+      if (req.body.phoneNumber) foundAddress.phoneNumber = req.body.phoneNumber;
+      if (req.body.deliveryInstructions)
+        foundAddress.deliveryInstructions = req.body.deliveryInstructions;
 
-    await foundAddress.save();
+      await foundAddress.save();
 
-    res.json({
-      success: true,
-      message: "successfully update the address",
-    });
+      res.json({
+        success: true,
+        message: "successfully update the address",
+      });
+    }
   } catch (err) {
-    console.log(err);
     res.status(500).json({
       success: false,
       message: err.message,

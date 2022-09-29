@@ -13,7 +13,6 @@ const ProductSchema = new Schema(
     weight: String,
     slug: { type: String, unique: true, required: true },
     category: { type: Schema.Types.ObjectId, ref: "Category" },
-    owner: { type: Schema.Types.ObjectId, ref: "Owner" },
     reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }],
     color: [],
     brand: { type: Schema.Types.ObjectId, ref: "Brand" },
@@ -26,11 +25,12 @@ const ProductSchema = new Schema(
       L: Number,
       XL: Number,
     },
+    inStock: {
+      type: Boolean,
+      default: true,
+    },
   },
-  {
-    toObject: { virtuals: true },
-    toJSON: { virtuals: true },
-  }
+  { timestamps: true, toObject: { virtuals: true }, toJSON: { virtuals: true } }
 );
 
 ProductSchema.virtual("avarageRating").get(function () {
@@ -56,10 +56,10 @@ ProductSchema.plugin(mongooseAlgolia, {
 
   selector:
     "title _id photo description price rating avarageRating getAbsoluteUrl",
-  populate: {
-    path: "owner",
-    select: "name",
-  },
+  // populate: {
+  //   path: "owner",
+  //   select: "name",
+  // },
   debug: true,
 });
 

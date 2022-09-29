@@ -2,21 +2,37 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt");
 
-const UserSchema = new Schema({
-  name: String,
-  email: { type: String, unique: true, required: true },
-  password: { type: String, require: true },
-  address: { type: Schema.Types.ObjectId, ref: "Address" },
-  admin: {
-    type: Boolean,
-    default: false,
+const UserSchema = new Schema(
+  {
+    name: String,
+    email: { type: String, unique: true, required: true },
+    password: { type: String, require: true },
+    address: { type: Schema.Types.ObjectId, ref: "Address" },
+    admin: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Active"],
+      default: "Pending",
+    },
+    isStaff: {
+      type: Boolean,
+      default: false,
+    },
+    isOwner: {
+      type: Boolean,
+      default: false,
+    },
+    isDispatch: {
+      type: Boolean,
+      default: false,
+    },
+    photo: String,
   },
-  status: {
-    type: String,
-    enum: ["Pending", "Active"],
-    default: "Pending",
-  },
-});
+  { timestamps: true }
+);
 
 UserSchema.pre("save", function (next) {
   let user = this;

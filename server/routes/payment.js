@@ -21,7 +21,9 @@ const SHIPMENT = {
 };
 
 function shipmentPrice(shipmentOption) {
-  let estimated = moment().add(shipmentOption.days, "d").format("dddd MMMM Do");
+  let estimated = moment()
+    .add(shipmentOption.days, "d")
+    .format("dddd DD MMMM YYYY");
 
   return { estimated, price: shipmentOption.price };
 }
@@ -69,7 +71,7 @@ router.post("/paystack/verify", verifyToken, async (req, res) => {
   try {
     reference = req.body.reference;
 
-    result = axios.get(
+    const result = axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
 
       {
@@ -86,15 +88,18 @@ router.post("/paystack/verify", verifyToken, async (req, res) => {
       order.products.push({
         productID: product._id,
         quantity: parseInt(product.quantity),
-        price: product.Orderprice,
-        size: product.Ordersize,
+        price: product.orderPrice,
+        size: product.orderSize,
       });
     });
     console.log(req.body.estimatedDelivery);
-    order.owner = req.decoded._id;
+    order.user = req.decoded._id;
     order.estimateDelivery = req.body.estimatedDelivery;
-    order.orderStatus = "PAID";
+    order.status = "Paid";
     order.total = req.body.total;
+    order.receiver = "632b47a5f6ee33ebe9600d45";
+    order.quantityBought = req.body.quantityBought;
+    order.payment = "Online payment";
     await order.save();
 
     res.json({
@@ -112,7 +117,6 @@ router.post("/paystack/verify", verifyToken, async (req, res) => {
 
 router.post("/stripe/payment", verifyToken, async (req, res) => {
   console.log(req.body);
-  let totalPrice = Math.round(req.body.totalPrice * 100);
   stripe.customers
     .create({
       email: req.decoded.email,
@@ -124,27 +128,32 @@ router.post("/stripe/payment", verifyToken, async (req, res) => {
     })
     .then((source) => {
       return stripe.charges.create({
-        amount: totalPrice,
+        amount: req.body.total,
         currency: "usd",
         customer: source.customer,
       });
     })
     .then(async (charge) => {
       let order = new Order();
+      console.log(req.body);
       let cart = req.body.cart;
 
       cart.map((product) => {
         order.products.push({
           productID: product._id,
           quantity: parseInt(product.quantity),
-          price: product.Orderprice,
-          size: product.Ordersize,
+          price: product.orderPrice,
+          size: product.orderSize,
         });
       });
 
-      order.owner = req.decoded._id;
+      order.user = req.decoded._id;
       order.estimateDelivery = req.body.estimatedDelivery;
-      order.orderStatus = "PAID";
+      order.status = "Paid";
+      order.total = req.body.total;
+      order.receiver = "632b494ef6ee33ebe9600d47";
+      order.payment = "Online payment";
+      order.quantityBought = req.body.quantityBought;
       await order.save();
 
       res.json({

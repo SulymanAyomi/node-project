@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@nuxtjs/auth": "^4.9.1",
-    "vuex-persistedstate": "^4.1.0"
-  }
-}
