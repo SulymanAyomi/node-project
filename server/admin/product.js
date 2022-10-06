@@ -8,6 +8,7 @@ const Category = require("../models/category");
 const Brand = require("../models/brand");
 const ProductType = require("../models/productType");
 const adminToken = require("../middlewares/admin-token");
+const verifyToken = require("../middlewares/verify-token");
 
 // POST request - create a new product
 
@@ -60,7 +61,7 @@ router.post(
 );
 
 // GET request - get all product
-router.get("/products", adminToken, async (req, res) => {
+router.get("/products", verifyToken, async (req, res) => {
   try {
     let products = await Product.find().populate("category").exec();
     res.json({
@@ -76,7 +77,7 @@ router.get("/products", adminToken, async (req, res) => {
 });
 
 // Get product by name
-router.get("/products/order", adminToken, async (req, res) => {
+router.get("/products/order", verifyToken, async (req, res) => {
   try {
     const fin = "^" + req.query.name;
     let products = await Product.find({
@@ -96,13 +97,13 @@ router.get("/products/order", adminToken, async (req, res) => {
 
 // GET request - get a single product
 
-router.get("/products/:id", adminToken, async (req, res) => {
+router.get("/products/:id", verifyToken, async (req, res) => {
   try {
     let product = await Product.findById({ _id: req.params.id })
       .populate("category")
       .populate("productType brand")
       .exec();
-    const order = await Order.find({ "products.$. productID": req.params.id });
+    const order = await Order.find({ "products.productID": req.params.id });
     // .populate("owner")
     // .exec();
     res.json({
@@ -225,7 +226,7 @@ router.delete("/products/:id", adminToken, async (req, res) => {
 
     if (deletedProduct) {
       res.json({
-        status: true,
+        success: true,
         message: "Successfully deleted",
       });
     }

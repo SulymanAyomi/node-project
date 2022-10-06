@@ -1,37 +1,13 @@
-const jwt = require("jsonwebtoken");
-
+const verifyToken = require("./verify-token");
 module.exports = function (req, res, next) {
-  let token = req.headers["x-access-token"] || req.headers["authorization"];
-  let checkBearer = "Bearer ";
-
-  if (token) {
-    if (token.startsWith(checkBearer)) {
-      token = token.slice(checkBearer.length, token.length);
+  verifyToken(req, res, next, () => {
+    if (req.decoded.isStaff || req.decoded.isOwner) {
+      next();
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "unauthourized user",
+      });
     }
-    jwt.verify(token, process.env.SECRET, (err, decoded) => {
-      if (err) {
-        res.json({
-          success: false,
-          message: "Failed to authenticate",
-        });
-      } else {
-        req.decoded = decoded;
-
-        if (!req.decoded.admin) {
-          res.status(403).json({
-            success: false,
-            message: "Not authourize",
-          });
-          return;
-        }
-
-        next();
-      }
-    });
-  } else {
-    res.json({
-      success: false,
-      message: "No token Provided",
-    });
-  }
+  });
 };

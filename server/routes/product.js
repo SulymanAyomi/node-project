@@ -19,7 +19,7 @@ const ProductType = require("../models/productType");
 // GET request - get all product
 router.get("/products", async (req, res) => {
   try {
-    let products = await Product.find().populate("category").exec();
+    let products = await Product.find().populate("category productType").exec();
     res.json({
       success: true,
       products: products,
@@ -61,7 +61,7 @@ router.get("/products/category/:category", async (req, res) => {
       .exec();
     res.json({
       success: true,
-      product: product,
+      products: product,
     });
   } catch (err) {
     res.status(500).json({
@@ -72,15 +72,15 @@ router.get("/products/category/:category", async (req, res) => {
 });
 
 // get a product by brand
-router.get("/products/category/:brand", async (req, res) => {
+router.get("/products/brand/:brand", async (req, res) => {
   try {
     let brand = await Brand.findOne({ slug: req.params.brand });
-    let product = await Product.find({ category: brand._id })
+    let product = await Product.find({ brand: brand._id })
       .populate("category")
       .exec();
     res.json({
       success: true,
-      product: product,
+      products: product,
     });
   } catch (err) {
     res.status(500).json({
@@ -91,19 +91,23 @@ router.get("/products/category/:brand", async (req, res) => {
 });
 
 // get a product by producttype
-router.get("/products/category/:producttype", async (req, res) => {
+router.get("/products/producttype/:type", async (req, res) => {
   try {
     let productType = await ProductType.findOne({
-      slug: req.params.producttype,
+      slug: req.params.type,
     });
-    let product = await Product.find({ category: productType._id })
+    let product = await Product.find({
+      productType: productType._id,
+    })
       .populate("category")
       .exec();
+    console.log(product);
     res.json({
       success: true,
-      product: product,
+      products: product,
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       success: false,
       message: err.message,

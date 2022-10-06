@@ -11,8 +11,14 @@ router.post("/reviews/:productID", verfityToken, async (req, res) => {
     review.rating = req.body.rating;
     review.user = req.decoded._id;
     review.productID = req.params.productID;
-    // const product = Product.findOne({ id: req.params.productID });
-    // await product.update({ $push: { reviews: review._id } });
+    await Product.updateOne(
+      { id: req.params.productID },
+      {
+        $push: {
+          reviews: review._id,
+        },
+      }
+    );
 
     const savedReview = await review.save();
 
@@ -20,6 +26,7 @@ router.post("/reviews/:productID", verfityToken, async (req, res) => {
       res.json({
         success: true,
         message: "Successfully added a Review",
+        review: savedReview,
       });
     }
   } catch (err) {
@@ -37,7 +44,6 @@ router.get("/review/:productID", async (req, res) => {
     })
       .populate("user")
       .exec();
-
     res.json({
       success: true,
       reviews: productReviews,

@@ -17,21 +17,21 @@ const transport = nodemailer.createTransport({
   },
 });
 
-sendConfirmationEmail = (name, email, token) => {
-  console.log("Check");
-  transport
-    .sendMail({
-      from: user,
-      to: email,
-      subject: "Please confirm your account",
-      html: `<h1>Email Confirmation</h1>
-        <h2>Hello ${name}</h2>
-        <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-        <a href=http://localhost:3000/account/verify/${token}> Click here</a>
-        </div>`,
-    })
-    .catch((err) => console.log(err));
-};
+// sendConfirmationEmail = (name, email, token) => {
+//   console.log("Check");
+//   transport
+//     .sendMail({
+//       from: user,
+//       to: email,
+//       subject: "Please confirm your account",
+//       html: `<h1>Email Confirmation</h1>
+//         <h2>Hello ${name}</h2>
+//         <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+//         <a href=http://localhost:3000/account/verify/${token}> Click here</a>
+//         </div>`,
+//     })
+//     .catch((err) => console.log(err));
+// };
 
 // singup route
 router.post("/auth/signup", upload.single("photo"), async (req, res) => {
@@ -97,7 +97,7 @@ router.post("/auth/signup/verify", async (req, res) => {
 });
 
 // profile routes
-router.get("/auth/user", adminToken, async (req, res) => {
+router.get("/auth/user", verifyToken, async (req, res) => {
   try {
     let foundUser = await User.findOne({ _id: req.decoded._id });
     if (foundUser) {
@@ -147,12 +147,12 @@ router.post("/auth/login", async (req, res) => {
     if (!foundUser) {
       res.status(403).json({
         success: false,
-        message: "Authourization failed, User not found",
+        message: "User not found",
       });
     } else if (!foundUser.admin) {
       res.status(401).json({
         success: false,
-        message: "You do not have authourization to use this app!",
+        message: "You are not authourize to use this app!",
       });
     } else {
       if (foundUser.comparePassword(req.body.password)) {
@@ -164,7 +164,7 @@ router.post("/auth/login", async (req, res) => {
       } else {
         res.status(403).json({
           success: true,
-          message: "Authourization failed, wrong password",
+          message: "wrong password or email",
         });
       }
     }
@@ -193,7 +193,7 @@ router.get("/auth/users", adminToken, async (req, res) => {
     });
   }
 });
-// profile routes
+// get a single user
 router.get("/auth/user/:id", adminToken, async (req, res) => {
   try {
     let foundUser = await User.findOne({ _id: req.params.id });
@@ -206,6 +206,23 @@ router.get("/auth/user/:id", adminToken, async (req, res) => {
         orders,
       });
     }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+// delete
+router.get("/auth/user/:id", adminToken, async (req, res) => {
+  try {
+    await User.findOneAndDelete({ _id: req.params.id });
+
+    res.json({
+      success: true,
+      message: "User deleted successfully",
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({
