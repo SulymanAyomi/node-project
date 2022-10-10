@@ -19,7 +19,10 @@ const ProductType = require("../models/productType");
 // GET request - get all product
 router.get("/products", async (req, res) => {
   try {
-    let products = await Product.find().populate("category productType").exec();
+    let products = await Product.find()
+      .populate("category productType")
+      .limit(8)
+      .exec();
     res.json({
       success: true,
       products: products,
