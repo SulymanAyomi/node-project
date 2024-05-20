@@ -49,26 +49,26 @@ ProductSchema.virtual("getAbsoluteUrl").get(function () {
   return `/products/${this.slug}/`;
 });
 
-ProductSchema.plugin(mongooseAlgolia, {
-  appId: process.env.ALGOLIA_APP_ID,
-  apiKey: process.env.ALGOLIA_SECRET,
-  indexName: process.env.ALGOLIA_INDEX,
+// ProductSchema.plugin(mongooseAlgolia, {
+//   appId: process.env.ALGOLIA_APP_ID,
+//   apiKey: process.env.ALGOLIA_SECRET,
+//   indexName: process.env.ALGOLIA_INDEX,
 
-  selector:
-    "title _id photo description price rating avarageRating getAbsoluteUrl",
-  // populate: {
-  //   path: "owner",
-  //   select: "name",
-  // },
-  debug: true,
-});
+//   selector:
+//     "title _id photo description price rating avarageRating getAbsoluteUrl",
+//   // populate: {
+//   //   path: "owner",
+//   //   select: "name",
+//   // },
+//   debug: true,
+// });
 
 let Model = mongoose.model("Product", ProductSchema);
 
-Model.SyncToAlgolia();
+// Model.SyncToAlgolia();
 
-Model.SetAlgoliaSettings({
-  searchableAttributes: ["title"],
-});
+// Model.SetAlgoliaSettings({
+//   searchableAttributes: ["title"],
+// });
 
 module.exports = Model;

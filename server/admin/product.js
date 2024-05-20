@@ -2,13 +2,14 @@ const router = require("express").Router();
 const Product = require("../models/product");
 const Order = require("../models/order");
 const Review = require("../models/review");
-const upload = require("../middlewares/upload-photos");
+const uploadImage = require("../middlewares/upload");
 const slugify = require("slugify");
 const Category = require("../models/category");
 const Brand = require("../models/brand");
 const ProductType = require("../models/productType");
 const adminToken = require("../middlewares/admin-token");
 const verifyToken = require("../middlewares/verify-token");
+const multer = require("multer"); // for handling file uploads
 
 // POST request - create a new product
 
@@ -20,12 +21,14 @@ const verifyToken = require("../middlewares/verify-token");
 // rating: [Number],
 
 // upload.single("photo")
+
+const upload = multer({ dest: "uploads/" });
 router.post(
   "/products",
-  [adminToken, upload.single("photo")],
+  [adminToken, upload.single("photo"), uploadImage],
   async (req, res) => {
-    console.log(req.body);
     try {
+      console.log(req.file.location);
       let product = new Product();
       product.title = req.body.title;
       product.slug = slugify(req.body.title.toLowerCase());
@@ -52,6 +55,7 @@ router.post(
         product: product,
       });
     } catch (err) {
+      console.log(err);
       res.status(500).json({
         success: false,
         message: err.message,
@@ -192,6 +196,7 @@ router.put(
         {
           $set: {
             title: req.body.title,
+            slug: slugify(req.body.title.toLowerCase()),
             price: req.body.price,
             category: req.body.categoryID,
             photo: req.file.location,
@@ -258,5 +263,7 @@ router.get("/reviews/:productID", async (req, res) => {
     });
   }
 });
+
+// get total available products
 
 module.exports = router;

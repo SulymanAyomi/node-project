@@ -1,10 +1,11 @@
 const router = require("express").Router();
 const Category = require("../models/category");
+const Product = require("../models/product");
 const slugify = require("slugify");
 const adminToken = require("../middlewares/admin-token");
 
 //  POST request
-router.post("/categories", adminToken, async (req, res) => {
+router.post("/categories/", adminToken, async (req, res) => {
   console.log(req.body);
   try {
     const category = new Category();
@@ -26,12 +27,24 @@ router.post("/categories", adminToken, async (req, res) => {
 });
 
 // GET rquest
-router.get("/categories", adminToken, async (req, res) => {
+router.get("/categories/", adminToken, async (req, res) => {
   try {
     let categories = await Category.find();
+    const list = await Promise.all(
+      categories.map(async (category) => {
+        const count = await Product.countDocuments({
+          category: category._id,
+        });
+
+        return {
+          category,
+          count,
+        };
+      })
+    );
     res.json({
       success: true,
-      categories: categories,
+      categories: list,
     });
   } catch (err) {
     res.status(500).json({
@@ -42,7 +55,7 @@ router.get("/categories", adminToken, async (req, res) => {
 });
 
 // GET a single rquest
-router.get("/categories/:id", adminToken, async (req, res) => {
+router.get("/categories/:id/", adminToken, async (req, res) => {
   try {
     let category = await Category.findOne({ _id: req.params.id });
     res.json({
@@ -59,7 +72,7 @@ router.get("/categories/:id", adminToken, async (req, res) => {
 
 // update
 
-router.put("/categories/:id", adminToken, async (req, res) => {
+router.put("/categories/:id/", adminToken, async (req, res) => {
   try {
     let categories = await Category.findOneAndUpdate(
       { _id: req.params.id },
@@ -84,7 +97,7 @@ router.put("/categories/:id", adminToken, async (req, res) => {
 
 // DELETE request
 
-router.delete("/categories/:id", adminToken, async (req, res) => {
+router.delete("/categories/:id/", adminToken, async (req, res) => {
   try {
     let deletedCategory = await Category.findOneAndDelete({
       _id: req.params.id,

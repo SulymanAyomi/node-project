@@ -1,2 +1,8 @@
 node_modules
 .env
+todo.txt
+admin/
+client/
+.gitignore
+package.lock.json
+uploads/

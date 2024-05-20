@@ -4,6 +4,7 @@ const bodyparser = require("body-parser");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const mongoSanitize = require("express-mongo-sanitize");
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ mongoose.connection.on("error", (err) => {
   console.log(err, "connection error");
 });
 // middleware
+app.use(mongoSanitize());
 app.use(cors());
 app.use(morgan("dev"));
 app.use(bodyparser.json());
@@ -35,7 +37,7 @@ const productTypeRoutes = require("./routes/productType");
 const brandRoutes = require("./routes/brand");
 const payment = require("./routes/payment");
 const order = require("./routes/order");
-const search = require("./routes/search");
+// const search = require("./routes/search");
 const adminProduct = require("./admin/product");
 const adminCategory = require("./admin/category");
 const adminBrand = require("./admin/brand");
@@ -55,7 +57,7 @@ app.use("/api", productTypeRoutes);
 app.use("/api", payment);
 app.use("/api", brandRoutes);
 app.use("/api", order);
-app.use("/api", search);
+// app.use("/api", search);
 
 // admin route
 app.use("/api/admin", adminProduct);

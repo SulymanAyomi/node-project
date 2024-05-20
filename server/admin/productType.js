@@ -1,10 +1,11 @@
 const router = require("express").Router();
 const ProductType = require("../models/productType");
+const Product = require("../models/product");
 const slugify = require("slugify");
 const adminToken = require("../middlewares/admin-token");
 
 //  POST request
-router.post("/producttype", adminToken, async (req, res) => {
+router.post("/producttypes/", adminToken, async (req, res) => {
   try {
     const productType = new ProductType();
     productType.type = req.body.type;
@@ -25,12 +26,25 @@ router.post("/producttype", adminToken, async (req, res) => {
 });
 
 // GET rquest
-router.get("/producttype", async (req, res) => {
+router.get("/producttypes/", async (req, res) => {
   try {
     let productTypes = await ProductType.find();
+    const list = await Promise.all(
+      productTypes.map(async (productType) => {
+        const count = await Product.countDocuments({
+          productType: productType._id,
+        });
+
+        return {
+          productType,
+          count,
+        };
+      })
+    );
+
     res.json({
       success: true,
-      productTypes: productTypes,
+      productTypes: list,
     });
   } catch (err) {
     res.status(500).json({
@@ -41,7 +55,7 @@ router.get("/producttype", async (req, res) => {
 });
 
 // update request
-router.put("/producttype/:id", async (req, res) => {
+router.put("/producttypes/:id/", async (req, res) => {
   try {
     let productTypes = await ProductType.findOneAndUpdate(
       {
@@ -68,7 +82,7 @@ router.put("/producttype/:id", async (req, res) => {
 
 // DELETE request
 
-router.delete("/producttype/:id", adminToken, async (req, res) => {
+router.delete("/producttypes/:id/", adminToken, async (req, res) => {
   try {
     let deletedProductType = await ProductType.findOneAndDelete({
       _id: req.params.id,

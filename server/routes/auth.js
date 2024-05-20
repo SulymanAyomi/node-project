@@ -34,57 +34,59 @@ sendConfirmationEmail = (name, email, token) => {
 // singup route
 router.post("/auth/signup", async (req, res) => {
   if (!req.body.email || !req.body.password) {
-    res.json({ success: false, message: "Please enter email or password" });
-  } else {
-    try {
-      email = await User.findOne({ email: req.body.email });
-      // validation
-      if (email) {
-        console.log("tr");
-        res.json({
-          success: false,
-          message: "Email already exist",
-        });
-        return;
-      }
+    return res.status(403).json({
+      success: false,
+      message: "Please enter email or password",
+    });
+  }
 
-      let newUser = new User();
-      newUser.name = req.body.name;
-      newUser.email = req.body.email;
-      newUser.password = req.body.password;
-      //  check if user is an admin
-      if (req.body.secretKey == process.env.ADMIN) {
-        newUser.admin = true;
-        newUser.status = "Active";
-        await newUser.save();
-        let token = jwt.sign(newUser.toJSON(), process.env.SECRET, {
-          expiresIn: 604800, // 1 week
-        });
-        return res.json({
-          success: true,
-          token: token,
-          message: "Successfully created a new admin user",
-        });
-      }
+  try {
+    email = await User.findOne({ email: req.body.email });
+    // validation
+    if (email) {
+      return res.status(403).json({
+        success: false,
+        message: "Email already exist",
+      });
+    }
 
+    let newUser = new User();
+    newUser.name = req.body.name;
+    newUser.email = req.body.email;
+    newUser.password = req.body.password;
+
+    //  check if user is an admin
+    if (req.body.secretKey == process.env.ADMIN) {
+      newUser.admin = true;
+      newUser.status = "Active";
       await newUser.save();
-
       let token = jwt.sign(newUser.toJSON(), process.env.SECRET, {
         expiresIn: 604800, // 1 week
       });
-
-      // nodemailer.sendConfirmationEmail(newUser.name, newUser.email, token);
-
-      res.json({
+      return res.status(201).json({
         success: true,
-        message: "User was registered successfully! Please check your mail",
-      });
-    } catch (err) {
-      res.status(500).json({
-        success: false,
-        message: "Server error. Try again",
+        token: token,
+        message: "Successfully created a new admin user",
       });
     }
+
+    await newUser.save();
+    const { user, password } = newUser;
+    let token = jwt.sign(user.toJSON(), process.env.SECRET, {
+      expiresIn: 604800, // 1 week
+    });
+
+    // nodemailer.sendConfirmationEmail(newUser.name, newUser.email, token);
+
+    res.json({
+      success: true,
+      message: "User was registered successfully! Please check your mail",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Server error. Try again",
+    });
   }
 });
 
@@ -123,10 +125,11 @@ router.post("/auth/signup/verify", async (req, res) => {
 // profile routes
 router.get("/auth/user", verifyToken, async (req, res) => {
   try {
-    let foundUser = await User.findOne({ _id: req.decoded._id })
+    let user = await User.findOne({ _id: req.decoded._id })
       .populate("address")
       .exec();
-    if (foundUser) {
+    if (user) {
+      const { foundUser, password } = user;
       res.json({
         success: true,
         user: foundUser,
@@ -169,13 +172,12 @@ router.put("/auth/user", verifyToken, async (req, res) => {
 // Login Routes
 router.post("/auth/login", async (req, res) => {
   try {
-    let foundUser = await User.findOne({ email: req.body.email });
-    if (!foundUser) {
-      res.status(403).json({
+    let user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return res.status(403).json({
         success: false,
         message: "Authourization failed, User not found",
       });
-      return;
 
       // if (foundUser.status != "Active") {
       //   return res.status(401).send({
@@ -184,8 +186,9 @@ router.post("/auth/login", async (req, res) => {
       //   });
       // }
     }
-    if (foundUser.comparePassword(req.body.password)) {
-      let token = jwt.sign(foundUser.toJSON(), process.env.SECRET, {
+    if (user.comparePassword(req.body.password)) {
+      const { password, ...foundUser } = user;
+      let token = jwt.sign(foundUser, process.env.SECRET, {
         expiresIn: 604800, // 1 week
       });
 
@@ -197,6 +200,7 @@ router.post("/auth/login", async (req, res) => {
       });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       success: false,
       message: err.message,
