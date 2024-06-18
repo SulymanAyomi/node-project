@@ -9,7 +9,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 dotenv.config();
 
 const app = express();
-mongoose.connect(process.env.DATABASEON, (err) => {
+mongoose.connect(process.env.DATABASEOFF, (err) => {
   if (err) {
     console.log(err);
   } else {

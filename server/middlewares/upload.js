@@ -22,7 +22,6 @@ module.exports = function (req, res, next) {
 
     // Return the URL of the uploaded image
     req.file.location = result.secure_url;
-    console.log(req.file.location, "lo");
     next();
   });
 };

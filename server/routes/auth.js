@@ -55,24 +55,9 @@ router.post("/auth/signup", async (req, res) => {
     newUser.email = req.body.email;
     newUser.password = req.body.password;
 
-    //  check if user is an admin
-    if (req.body.secretKey == process.env.ADMIN) {
-      newUser.admin = true;
-      newUser.status = "Active";
-      await newUser.save();
-      let token = jwt.sign(newUser.toJSON(), process.env.SECRET, {
-        expiresIn: 604800, // 1 week
-      });
-      return res.status(201).json({
-        success: true,
-        token: token,
-        message: "Successfully created a new admin user",
-      });
-    }
-
     await newUser.save();
-    const { user, password } = newUser;
-    let token = jwt.sign(user.toJSON(), process.env.SECRET, {
+    const { password, ...user } = newUser;
+    let token = jwt.sign(user, process.env.SECRET, {
       expiresIn: 604800, // 1 week
     });
 
@@ -80,12 +65,12 @@ router.post("/auth/signup", async (req, res) => {
 
     res.json({
       success: true,
-      message: "User was registered successfully! Please check your mail",
+      message: "User was registered successfully!",
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: "Server error. Try again",
+      message: "Something went wrong. Please try again",
     });
   }
 });
@@ -143,32 +128,6 @@ router.get("/auth/user", verifyToken, async (req, res) => {
   }
 });
 
-// update a profile
-
-router.put("/auth/user", verifyToken, async (req, res) => {
-  try {
-    let foundUser = await User.findOne({ _id: req.decoded._id });
-
-    if (foundUser) {
-      if (req.body.name) foundUser.name = req.body.name;
-      if (req.body.email) foundUser.email = req.body.email;
-      if (req.body.password) foundUser.password = req.body.password;
-
-      await foundUser.save();
-
-      res.json({
-        success: true,
-        message: "Successfully updated",
-      });
-    }
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-});
-
 // Login Routes
 router.post("/auth/login", async (req, res) => {
   try {
@@ -176,7 +135,7 @@ router.post("/auth/login", async (req, res) => {
     if (!user) {
       return res.status(403).json({
         success: false,
-        message: "Authourization failed, User not found",
+        message: "Invalid email address or password",
       });
 
       // if (foundUser.status != "Active") {
@@ -196,47 +155,11 @@ router.post("/auth/login", async (req, res) => {
     } else {
       res.status(403).json({
         success: true,
-        message: "Authourization failed, wrong password",
+        message: "Invalid email address or password",
       });
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-});
-
-// admin login
-router.post("/auth/admin/login", async (req, res) => {
-  try {
-    let foundUser = await User.findOne({ email: req.body.email });
-    if (!foundUser) {
-      res.status(403).json({
-        success: false,
-        message: "Authourization failed, User not found",
-      });
-    } else if (!foundUser.admin) {
-      res.status(401).json({
-        success: false,
-        message: "Authourization failed, User not allowed",
-      });
-    } else {
-      if (foundUser.comparePassword(req.body.password)) {
-        let token = jwt.sign(foundUser.toJSON(), process.env.SECRET, {
-          expiresIn: 604800, // 1 week
-        });
-
-        res.json({ success: true, token: token });
-      } else {
-        res.status(403).json({
-          success: true,
-          message: "Authourization failed, wrong password",
-        });
-      }
-    }
-  } catch (err) {
     res.status(500).json({
       success: false,
       message: err.message,

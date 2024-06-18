@@ -19,15 +19,21 @@ const ProductType = require("../models/productType");
 // GET request - get all product
 router.get("/products/", async (req, res) => {
   try {
-    let products = await Product.find()
-      .populate("category productType")
-      .limit(8)
-      .exec();
+    console.log(req.query, "hh");
+    let products = Product.find().populate("category productType").limit(8);
+    if (req.query.sort) {
+      let sort = req.query.sort;
+      console.log(sort);
+      products = await sortProduct(sort, products);
+    } else {
+      products = await products.exec();
+    }
     res.json({
       success: true,
       products: products,
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       success: false,
       message: err.message,
@@ -211,5 +217,23 @@ router.get("/reviews/:productID/", async (req, res) => {
     });
   }
 });
+
+async function sortProduct(sort, product) {
+  if (sort == "AlphaPlus") {
+    return await product.sort({ title: +1 }).exec();
+  } else if (sort == "AlphaMinus") {
+    return await product.sort({ title: -1 }).exec();
+  } else if (sort == "PricePlus") {
+    return await product.sort({ price: +1 }).exec();
+  } else if (sort == "PriceMinus") {
+    return await product.sort({ price: -1 }).exec();
+  } else if (sort == "DatePlus") {
+    return product.sort({ updatedAt: +1 }).exec();
+  } else if (sort == "DateMinus") {
+    return product.sort({ updatedAt: -1 }).exec();
+  } else {
+    return product.exec();
+  }
+}
 
 module.exports = router;

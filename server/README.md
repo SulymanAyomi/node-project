@@ -2,8 +2,11 @@
 
 ## Description
 
-    An e-commerce platform developed using Nuxt.js. Integrated Algolia Search for efficient product search and AWS S3 for storage. Implemented payment processing using Stripe and Paystack.
-    The front-end part of the e-commerce.
+    This Nuxt e-commerce platform is a dynamic and user-friendly online store designed to provide an exceptional shopping
+    experience. Leveraging the power of Nuxt.js, this project is
+    built for performance, scalability, and a seamless user
+    interface. Key features include Algolia search, dual payment
+    options, and a comprehensive product rating system.
 
 ## Technologies
 
@@ -11,6 +14,10 @@
     - Bootstrap
     - Vuex
     - NodeJS
+    - MongoDB
+    - Cloudinary
+    - Algolia Search
+    - Aws S3
 
 ## Key Achievements/Features
 
