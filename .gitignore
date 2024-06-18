@@ -1,8 +1,8 @@
 node_modules
 .env
 todo.txt
-admin/
-client/
+admin
+client
 .gitignore
 package.lock.json
 uploads/
