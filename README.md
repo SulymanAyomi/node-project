@@ -32,15 +32,18 @@
 
 ## Pages
 
-    ### Admin dashboard page
-        <!-- link to image -->
+### Admin dashboard page
 
-    ### Admin Products page
+![Adim dashboardpage](https://github.com/SulymanAyomi/Images/blob/main/nodeproject/admin%20homepage.png)
 
-    ### Home page
+### Home page
 
+![Home page](https://github.com/SulymanAyomi/Images/blob/main/nodeproject/homepage.png)
+![Home page](https://github.com/SulymanAyomi/Images/blob/main/nodeproject/homepage1.png)
 
-    ### Admin login page
+### Product page
+
+![Product page](<https://github.com/SulymanAyomi/Images/blob/main/nodeproject/Screenshot%20(624).png>)
 
 ## How to run the application
 
