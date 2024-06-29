@@ -10,25 +10,17 @@ module.exports = function (req, res, next) {
     }
     jwt.verify(token, process.env.SECRET, (err, decoded) => {
       if (err) {
-        res.json({
+        res.status(403).json({
           success: false,
           message: "Failed to authenticate",
         });
       } else {
         req.decoded = decoded;
         next();
-        // if (req.decoded.admin) {
-        //   next();
-        // } else {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message: "unauthourized user",
-        //   });
-        // }
       }
     });
   } else {
-    res.json({
+    return res.status(403).json({
       success: false,
       message: "No token Provided",
     });

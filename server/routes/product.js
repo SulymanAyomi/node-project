@@ -19,11 +19,9 @@ const ProductType = require("../models/productType");
 // GET request - get all product
 router.get("/products/", async (req, res) => {
   try {
-    console.log(req.query, "hh");
     let products = Product.find().populate("category productType").limit(8);
     if (req.query.sort) {
       let sort = req.query.sort;
-      console.log(sort);
       products = await sortProduct(sort, products);
     } else {
       products = await products.exec();

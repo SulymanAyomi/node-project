@@ -1,5 +1,6 @@
 // jsonwebtoken bcrypt-nodejs --save
-
+// const passport = require("passport");
+// const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const router = require("express").Router();
 const User = require("../models/user");
 const nodemailer = require("nodemailer");
@@ -110,12 +111,13 @@ router.post("/auth/signup/verify", async (req, res) => {
 // profile routes
 router.get("/auth/user", verifyToken, async (req, res) => {
   try {
+    console.log(req.decoded);
     let user = await User.findOne({ _id: req.decoded._id })
       .populate("address")
       .exec();
     if (user) {
-      const { foundUser, password } = user;
-      res.json({
+      const { password, ...foundUser } = user.toObject();
+      res.status(200).json({
         success: true,
         user: foundUser,
       });
@@ -146,12 +148,14 @@ router.post("/auth/login", async (req, res) => {
       // }
     }
     if (user.comparePassword(req.body.password)) {
-      const { password, ...foundUser } = user;
+      const { password, ...foundUser } = user.toObject();
+      console.log(foundUser);
+
       let token = jwt.sign(foundUser, process.env.SECRET, {
         expiresIn: 604800, // 1 week
       });
 
-      res.json({ success: true, token: token });
+      res.status(200).json({ success: true, token: token });
     } else {
       res.status(403).json({
         success: true,
@@ -166,5 +170,47 @@ router.post("/auth/login", async (req, res) => {
     });
   }
 });
+
+// Google routes
+// passport.use(
+//   new GoogleStrategy(
+//     {
+//       clientID: process.env.GOOGLE_CLIENT_ID,
+//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//       callbackURL: "/auth/google/callback",
+//     },
+//     (accessToken, refreshToken, profile, done) => {
+//       return done(null, profile);
+//     }
+//   )
+// );
+
+// app.get(
+//   "/auth/google",
+//   passport.authenticate("google", {
+//     scope: ["profile", "email"],
+//   })
+// );
+
+// app.get(
+//   "/auth/google/callback",
+//   passport.authenticate("google", { session: false }),
+//   (req, res) => {
+//     const token = jwt.sign({ user: req.user }, process.env.JWT_SECRET, {
+//       expiresIn: "1h",
+//     });
+//     res.redirect(`http://localhost:8080/profile?token=${token}`);
+//   }
+// );
+
+// app.post("/profile", (req, res) => {
+//   const token = req.headers.authorization.split(" ")[1];
+//   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+//     if (err) {
+//       return res.status(401).send("Unauthorized");
+//     }
+//     res.send(decoded.user);
+//   });
+// });
 
 module.exports = router;
